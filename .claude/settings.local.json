@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "supabase"
+  ],
+  "enableAllProjectMcpServers": true
+}

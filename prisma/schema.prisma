@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── NextAuth 必須モデル ───────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ─── アプリ固有モデル ──────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  employeeCode  String?   @unique
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(EMPLOYEE)
+  department    String?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts          Account[]
+  sessions          Session[]
+  attendanceRecords AttendanceRecord[]
+
+  @@map("users")
+}
+
+model AttendanceRecord {
+  id          String           @id @default(cuid())
+  userId      String
+  date        DateTime         @db.Date
+  clockInAt   DateTime
+  clockOutAt  DateTime?
+  clockInLat  Float?
+  clockInLng  Float?
+  clockOutLat Float?
+  clockOutLng Float?
+  status      AttendanceStatus @default(CLOCKED_IN)
+  note        String?
+  isEdited    Boolean          @default(false)
+  editedAt    DateTime?
+  editedBy    String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  breakRecords BreakRecord[]
+
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@map("attendance_records")
+}
+
+model BreakRecord {
+  id                 String    @id @default(cuid())
+  attendanceRecordId String
+  breakStartAt       DateTime
+  breakEndAt         DateTime?
+  createdAt          DateTime  @default(now())
+
+  attendanceRecord AttendanceRecord @relation(fields: [attendanceRecordId], references: [id], onDelete: Cascade)
+
+  @@index([attendanceRecordId])
+  @@map("break_records")
+}
+
+model AppSettings {
+  id                  String   @id @default("singleton")
+  companyName         String   @default("自社")
+  standardWorkMinutes Int      @default(480)
+  updatedAt           DateTime @updatedAt
+
+  @@map("app_settings")
+}
+
+// ─── Enum ─────────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
+
+enum AttendanceStatus {
+  CLOCKED_IN
+  ON_BREAK
+  CLOCKED_OUT
+}
