@@ -237,7 +237,7 @@ export default function EmployeesPage() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border overflow-x-auto">
         {loading ? (
           <p className="text-center text-gray-400 py-8">読み込み中...</p>
         ) : (
