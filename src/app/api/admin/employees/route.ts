@@ -17,6 +17,7 @@ export async function GET() {
     select: {
       id: true, name: true, email: true, employeeCode: true,
       role: true, department: true, isActive: true, createdAt: true,
+      shiftsJson: true,
     },
   });
 

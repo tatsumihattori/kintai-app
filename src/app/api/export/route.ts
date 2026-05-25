@@ -7,6 +7,8 @@ import { prisma } from "@/lib/prisma";
 import { startOfMonth, endOfMonth } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { generateCsv } from "@/lib/csv";
+import { deriveStandardWorkMinutes } from "@/lib/calculations";
+import type { ShiftsJson } from "@/lib/db-types";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -26,17 +28,23 @@ export async function GET(req: NextRequest) {
   const from = startOfMonth(base);
   const to = endOfMonth(base);
 
-  const [records, settings] = await Promise.all([
+  const [records, user] = await Promise.all([
     prisma.attendanceRecord.findMany({
       where: { userId: targetUserId, date: { gte: from, lte: to } },
       include: { breakRecords: { orderBy: { breakStartAt: "asc" } } },
       orderBy: { date: "asc" },
     }),
-    prisma.appSettings.findUnique({ where: { id: "singleton" } }),
+    prisma.user.findUnique({ where: { id: targetUserId }, select: { shiftsJson: true } }),
   ]);
 
-  const standardWorkMinutes = settings?.standardWorkMinutes ?? 480;
-  const csv = generateCsv(records, standardWorkMinutes);
+  const shiftMap = (user?.shiftsJson ?? {}) as ShiftsJson;
+  const enriched = records.map(r => ({
+    ...r,
+    standardWorkMinutes: deriveStandardWorkMinutes(
+      shiftMap[String(toZonedTime(r.date, "Asia/Tokyo").getDay())]
+    ),
+  }));
+  const csv = generateCsv(enriched);
   const filename = `勤怠_${year}_${String(month).padStart(2, "0")}.csv`;
 
   return new NextResponse(csv, {

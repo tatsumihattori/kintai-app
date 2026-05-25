@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { format } from "date-fns";
@@ -7,15 +7,14 @@ import type { AttendanceRecord, BreakRecord } from "@/lib/db-types";
 import { calcWorkMinutes, calcTotalBreakMinutes, calcOvertimeMinutes, formatMinutes } from "@/lib/calculations";
 import { EditRecordModal } from "@/components/attendance/EditRecordModal";
 
-type RecordWithBreaks = AttendanceRecord & { breakRecords: BreakRecord[] };
+type RecordWithBreaks = AttendanceRecord & { breakRecords: BreakRecord[]; standardWorkMinutes?: number | null };
 
 interface Props {
   records: RecordWithBreaks[];
-  standardWorkMinutes: number;
   onUpdate: (record: RecordWithBreaks) => void;
 }
 
-export function AttendanceTable({ records, standardWorkMinutes, onUpdate }: Props) {
+export function AttendanceTable({ records, onUpdate }: Props) {
   const [editTarget, setEditTarget] = useState<RecordWithBreaks | null>(null);
 
   if (records.length === 0) {
@@ -48,8 +47,8 @@ export function AttendanceTable({ records, standardWorkMinutes, onUpdate }: Prop
                 ? calcWorkMinutes(r.clockInAt, r.clockOutAt, r.breakRecords)
                 : null;
               const overtimeMin =
-                workMin !== null
-                  ? calcOvertimeMinutes(workMin, standardWorkMinutes)
+                workMin !== null && r.standardWorkMinutes != null
+                  ? calcOvertimeMinutes(workMin, r.standardWorkMinutes)
                   : null;
 
               return (
@@ -109,4 +108,3 @@ export function AttendanceTable({ records, standardWorkMinutes, onUpdate }: Prop
     </>
   );
 }
-

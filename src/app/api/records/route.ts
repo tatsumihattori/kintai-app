@@ -6,6 +6,8 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { startOfMonth, endOfMonth } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
+import { deriveStandardWorkMinutes } from "@/lib/calculations";
+import type { ShiftsJson } from "@/lib/db-types";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -26,15 +28,26 @@ export async function GET(req: NextRequest) {
   const from = startOfMonth(base);
   const to = endOfMonth(base);
 
-  const records = await prisma.attendanceRecord.findMany({
-    where: {
-      userId: targetUserId,
-      date: { gte: from, lte: to },
-    },
-    include: { breakRecords: { orderBy: { breakStartAt: "asc" } } },
-    orderBy: { date: "asc" },
-  });
+  const [records, user] = await Promise.all([
+    prisma.attendanceRecord.findMany({
+      where: {
+        userId: targetUserId,
+        date: { gte: from, lte: to },
+      },
+      include: { breakRecords: { orderBy: { breakStartAt: "asc" } } },
+      orderBy: { date: "asc" },
+    }),
+    prisma.user.findUnique({ where: { id: targetUserId }, select: { shiftsJson: true } }),
+  ]);
 
-  return NextResponse.json({ records });
+  const shiftMap = (user?.shiftsJson ?? {}) as ShiftsJson;
+  const result = records.map(r => ({
+    ...r,
+    standardWorkMinutes: deriveStandardWorkMinutes(
+      shiftMap[String(toZonedTime(r.date, "Asia/Tokyo").getDay())]
+    ),
+  }));
+
+  return NextResponse.json({ records: result });
 }
 

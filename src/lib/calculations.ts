@@ -31,3 +31,11 @@ export function formatMinutes(minutes: number): string {
   return `${h}時間${m > 0 ? `${m}分` : ""}`;
 }
 
+export function deriveStandardWorkMinutes(
+  shift: { startTime: number | null; endTime: number | null; breakMinutes: number } | null | undefined
+): number | null {
+  if (shift === null || shift === undefined) return null;
+  if (shift.startTime === null || shift.endTime === null) return 0;
+  return (shift.endTime - shift.startTime) - shift.breakMinutes;
+}
+

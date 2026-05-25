@@ -85,7 +85,6 @@ export default function AdminPage() {
 
       <div className="flex gap-2 flex-wrap">
         <a href="/admin/employees" className="text-sm text-blue-600 hover:underline">社員管理 →</a>
-        <a href="/admin/settings" className="text-sm text-blue-600 hover:underline">設定 →</a>
         <a href="/admin/reports" className="text-sm text-blue-600 hover:underline">全員レポート →</a>
       </div>
     </div>

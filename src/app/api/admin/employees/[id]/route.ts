@@ -19,6 +19,18 @@ async function guard(session: Awaited<ReturnType<typeof getServerSession<typeof 
   return true;
 }
 
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await getServerSession(authOptions);
+  if (!await guard(session)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  const shiftsJson = await req.json();
+  await prisma.user.update({ where: { id: params.id }, data: { shiftsJson } });
+  return NextResponse.json({ success: true });
+}
+
 export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }

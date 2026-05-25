@@ -64,6 +64,8 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  shiftsJson        Json?
+
   accounts          Account[]
   sessions          Session[]
   attendanceRecords AttendanceRecord[]
@@ -108,15 +110,6 @@ model BreakRecord {
 
   @@index([attendanceRecordId])
   @@map("break_records")
-}
-
-model AppSettings {
-  id                  String   @id @default("singleton")
-  companyName         String   @default("自社")
-  standardWorkMinutes Int      @default(480)
-  updatedAt           DateTime @updatedAt
-
-  @@map("app_settings")
 }
 
 // ─── Enum ─────────────────────────────────────────────────────

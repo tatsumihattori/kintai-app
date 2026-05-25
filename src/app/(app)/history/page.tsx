@@ -1,30 +1,24 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { format } from "date-fns";
 import type { AttendanceRecord, BreakRecord } from "@/lib/db-types";
 import { AttendanceTable } from "@/components/attendance/AttendanceTable";
 
-type RecordWithBreaks = AttendanceRecord & { breakRecords: BreakRecord[] };
+type RecordWithBreaks = AttendanceRecord & { breakRecords: BreakRecord[]; standardWorkMinutes?: number | null };
 
 export default function HistoryPage() {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [records, setRecords] = useState<RecordWithBreaks[]>([]);
-  const [standardWorkMinutes, setStandardWorkMinutes] = useState(480);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async (y: number, m: number) => {
     setLoading(true);
-    const [recRes, sumRes] = await Promise.all([
-      fetch(`/api/records?year=${y}&month=${m}`),
-      fetch(`/api/summary?year=${y}&month=${m}`),
-    ]);
-    const recData = await recRes.json();
-    const sumData = await sumRes.json();
-    setRecords(recData.records ?? []);
-    setStandardWorkMinutes(sumData.standardWorkMinutes ?? 480);
+    const res = await fetch(`/api/records?year=${y}&month=${m}`);
+    const data = await res.json();
+    setRecords(data.records ?? []);
     setLoading(false);
   }, []);
 
@@ -66,7 +60,6 @@ export default function HistoryPage() {
         ) : (
           <AttendanceTable
             records={records}
-            standardWorkMinutes={standardWorkMinutes}
             onUpdate={updateRecord}
           />
         )}
@@ -74,4 +67,3 @@ export default function HistoryPage() {
     </div>
   );
 }
-

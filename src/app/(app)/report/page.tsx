@@ -1,38 +1,26 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import type { AttendanceRecord, BreakRecord } from "@/lib/db-types";
 import { SummaryCards } from "@/components/attendance/SummaryCards";
 import { AttendanceTable } from "@/components/attendance/AttendanceTable";
+import { calcWorkMinutes, calcOvertimeMinutes } from "@/lib/calculations";
 
-type RecordWithBreaks = AttendanceRecord & { breakRecords: BreakRecord[] };
-
-interface Summary {
-  workingDays: number;
-  totalWorkMinutes: number;
-  totalOvertimeMinutes: number;
-  standardWorkMinutes: number;
-}
+type RecordWithBreaks = AttendanceRecord & { breakRecords: BreakRecord[]; standardWorkMinutes?: number | null };
 
 export default function ReportPage() {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [records, setRecords] = useState<RecordWithBreaks[]>([]);
-  const [summary, setSummary] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
 
   const load = useCallback(async (y: number, m: number) => {
     setLoading(true);
-    const [recRes, sumRes] = await Promise.all([
-      fetch(`/api/records?year=${y}&month=${m}`),
-      fetch(`/api/summary?year=${y}&month=${m}`),
-    ]);
-    const recData = await recRes.json();
-    const sumData = await sumRes.json();
-    setRecords(recData.records ?? []);
-    setSummary(sumData);
+    const res = await fetch(`/api/records?year=${y}&month=${m}`);
+    const data = await res.json();
+    setRecords(data.records ?? []);
     setLoading(false);
   }, []);
 
@@ -64,6 +52,19 @@ export default function ReportPage() {
     setRecords((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
   }
 
+  const workingDays = records.filter(r => r.clockOutAt).length;
+  const totalWorkMinutes = records.reduce((sum, r) => {
+    if (!r.clockOutAt) return sum;
+    return sum + calcWorkMinutes(r.clockInAt, r.clockOutAt, r.breakRecords);
+  }, 0);
+  const totalOvertimeMinutes = records.reduce((sum, r) => {
+    if (r.standardWorkMinutes == null || !r.clockOutAt) return sum;
+    return sum + Math.max(0, calcOvertimeMinutes(
+      calcWorkMinutes(r.clockInAt, r.clockOutAt, r.breakRecords),
+      r.standardWorkMinutes
+    ));
+  }, 0);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
@@ -88,12 +89,11 @@ export default function ReportPage() {
         </div>
       </div>
 
-      {summary && !loading && (
+      {!loading && (
         <SummaryCards
-          workingDays={summary.workingDays}
-          totalWorkMinutes={summary.totalWorkMinutes}
-          totalOvertimeMinutes={summary.totalOvertimeMinutes}
-          standardWorkMinutes={summary.standardWorkMinutes}
+          workingDays={workingDays}
+          totalWorkMinutes={totalWorkMinutes}
+          totalOvertimeMinutes={totalOvertimeMinutes}
         />
       )}
 
@@ -103,7 +103,6 @@ export default function ReportPage() {
         ) : (
           <AttendanceTable
             records={records}
-            standardWorkMinutes={summary?.standardWorkMinutes ?? 480}
             onUpdate={updateRecord}
           />
         )}
@@ -111,4 +110,3 @@ export default function ReportPage() {
     </div>
   );
 }
-
