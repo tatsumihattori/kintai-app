@@ -21,12 +21,6 @@ async function main() {
     },
   });
 
-  await prisma.appSettings.upsert({
-    where: { id: "singleton" },
-    update: {},
-    create: { id: "singleton" },
-  });
-
   console.log(`管理者アカウントを作成しました: ${admin.email}`);
   console.log("このメールアドレスで Google ログインすると管理者として入場できます");
 }
