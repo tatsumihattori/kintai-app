@@ -16,7 +16,6 @@ interface NavbarProps {
 
 const navItems = [
   { href: "/dashboard", label: "打刻" },
-  { href: "/history", label: "履歴" },
   { href: "/report", label: "レポート" },
 ];
 
