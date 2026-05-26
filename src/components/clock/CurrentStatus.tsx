@@ -10,7 +10,7 @@ type RecordWithBreaks = AttendanceRecord & { breakRecords: BreakRecord[] };
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   CLOCKED_IN: { label: "出勤中", color: "bg-blue-100 text-blue-800" },
-  ON_BREAK: { label: "休憩中", color: "bg-amber-100 text-amber-800" },
+  ON_BREAK: { label: "中抜け中", color: "bg-amber-100 text-amber-800" },
   CLOCKED_OUT: { label: "退勤済", color: "bg-gray-100 text-gray-600" },
 };
 
@@ -61,7 +61,7 @@ export function CurrentStatus({ record }: Props) {
             </p>
           </div>
           <div>
-            <p className="text-gray-400">休憩</p>
+            <p className="text-gray-400">中抜け</p>
             <p className="font-medium">{breakMin > 0 ? formatMinutes(breakMin) : "—"}</p>
           </div>
         </div>

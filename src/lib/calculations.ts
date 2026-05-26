@@ -8,6 +8,12 @@ export function calcTotalBreakMinutes(breaks: BreakRecord[]): number {
   }, 0);
 }
 
+export function calcAutoBreakMinutes(workableMinutes: number): number {
+  if (workableMinutes >= 480) return 60;
+  if (workableMinutes >= 360) return 45;
+  return 0;
+}
+
 export function calcWorkMinutes(
   clockInAt: Date,
   clockOutAt: Date,
@@ -15,7 +21,9 @@ export function calcWorkMinutes(
 ): number {
   const totalMs = new Date(clockOutAt).getTime() - new Date(clockInAt).getTime();
   const totalMinutes = Math.floor(totalMs / 60000);
-  return Math.max(0, totalMinutes - calcTotalBreakMinutes(breaks));
+  const nakanukeMinutes = calcTotalBreakMinutes(breaks);
+  const workableMinutes = Math.max(0, totalMinutes - nakanukeMinutes);
+  return Math.max(0, workableMinutes - calcAutoBreakMinutes(workableMinutes));
 }
 
 export function calcOvertimeMinutes(

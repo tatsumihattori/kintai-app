@@ -30,7 +30,7 @@ export function AttendanceTable({ records, onUpdate }: Props) {
               <th className="py-2 pr-3 font-medium">日付</th>
               <th className="py-2 pr-3 font-medium">出勤</th>
               <th className="py-2 pr-3 font-medium">退勤</th>
-              <th className="py-2 pr-3 font-medium">休憩</th>
+              <th className="py-2 pr-3 font-medium">中抜け</th>
               <th className="py-2 pr-3 font-medium">実労働</th>
               <th className="py-2 pr-3 font-medium">残業</th>
               <th className="py-2 font-medium"></th>

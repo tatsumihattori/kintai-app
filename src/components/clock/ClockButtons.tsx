@@ -74,22 +74,22 @@ export function ClockButtons({ record, onUpdate }: ClockButtonsProps) {
           退勤
         </button>
 
-        {/* 休憩開始 */}
+        {/* 中抜け開始 */}
         <button
           onClick={() => handleAction("/api/breaks/start")}
           disabled={loading || status !== "CLOCKED_IN"}
           className="h-16 rounded-xl text-white font-bold shadow transition-all bg-amber-500 hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
         >
-          休憩開始
+          中抜け開始
         </button>
 
-        {/* 休憩終了 */}
+        {/* 中抜け終了 */}
         <button
           onClick={() => handleAction("/api/breaks/end")}
           disabled={loading || status !== "ON_BREAK"}
           className="h-16 rounded-xl text-white font-bold shadow transition-all bg-green-600 hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
         >
-          休憩終了
+          中抜け終了
         </button>
       </div>
 

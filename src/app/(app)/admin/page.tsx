@@ -18,7 +18,7 @@ interface Employee {
 
 const STATUS_CONFIG: Record<AttendanceStatus | "NONE", { label: string; color: string }> = {
   CLOCKED_IN: { label: "出勤中", color: "bg-blue-100 text-blue-800" },
-  ON_BREAK: { label: "休憩中", color: "bg-amber-100 text-amber-800" },
+  ON_BREAK: { label: "中抜け中", color: "bg-amber-100 text-amber-800" },
   CLOCKED_OUT: { label: "退勤済", color: "bg-gray-100 text-gray-500" },
   NONE: { label: "未出勤", color: "bg-red-50 text-red-400" },
 };

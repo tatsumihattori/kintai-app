@@ -30,7 +30,7 @@ export function generateCsv(records: RecordWithBreaks[]): string {
       曜日: dayOfWeek,
       出勤時刻: clockIn,
       退勤時刻: clockOut,
-      休憩時間: breakMin > 0 ? formatMinutes(breakMin) : "",
+      中抜け時間: breakMin > 0 ? formatMinutes(breakMin) : "",
       実労働時間: workMin > 0 ? formatMinutes(workMin) : "",
       残業時間: overtimeStr,
       備考: r.note ?? "",
