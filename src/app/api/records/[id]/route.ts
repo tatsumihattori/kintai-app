@@ -7,8 +7,8 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
 const updateSchema = z.object({
-  clockInAt: z.string().datetime().optional(),
-  clockOutAt: z.string().datetime().optional().nullable(),
+  clockInAt: z.string().datetime({ offset: true }).optional(),
+  clockOutAt: z.string().datetime({ offset: true }).optional().nullable(),
   note: z.string().optional().nullable(),
 });
 
