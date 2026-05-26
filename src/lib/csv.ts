@@ -1,17 +1,21 @@
 ﻿import Papa from "papaparse";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
+import { toZonedTime } from "date-fns-tz";
 import { calcWorkMinutes, calcTotalBreakMinutes, calcOvertimeMinutes, formatMinutes } from "@/lib/calculations";
 import type { AttendanceRecord, BreakRecord } from "@/lib/db-types";
+
+const TZ = "Asia/Tokyo";
 
 type RecordWithBreaks = AttendanceRecord & { breakRecords: BreakRecord[]; standardWorkMinutes?: number | null };
 
 export function generateCsv(records: RecordWithBreaks[]): string {
   const rows = records.map((r) => {
-    const date = format(new Date(r.date), "yyyy/MM/dd", { locale: ja });
-    const dayOfWeek = format(new Date(r.date), "E", { locale: ja });
-    const clockIn = r.clockInAt ? format(new Date(r.clockInAt), "HH:mm") : "";
-    const clockOut = r.clockOutAt ? format(new Date(r.clockOutAt), "HH:mm") : "";
+    const dateJst = toZonedTime(r.date, TZ);
+    const date = format(dateJst, "yyyy/MM/dd", { locale: ja });
+    const dayOfWeek = format(dateJst, "E", { locale: ja });
+    const clockIn = r.clockInAt ? format(toZonedTime(r.clockInAt, TZ), "HH:mm") : "";
+    const clockOut = r.clockOutAt ? format(toZonedTime(r.clockOutAt, TZ), "HH:mm") : "";
     const breakMin = calcTotalBreakMinutes(r.breakRecords);
     const workMin =
       r.clockInAt && r.clockOutAt
